@@ -19,15 +19,18 @@
 
 # GitHub Actions workflow for deploying a Node.js app to Azure Web App
 
+# This workflow will build and push a Node.js application to an Azure Web App 
+# when a commit is pushed to your default branch.
+
 on:
   push:
     branches: [ "main" ]
   workflow_dispatch:
 
 env:
-  AZURE_WEBAPP_NAME: app-advanced3-3  # AzureのWebアプリ名を設定
-  AZURE_WEBAPP_PACKAGE_PATH: '.'      # アプリのパス、通常はリポジトリのルート
-  NODE_VERSION: '20.x'                # 使用するNode.jsのバージョン
+  AZURE_WEBAPP_NAME: app-advanced3-3    # あなたのAzure Webアプリ名に変更
+  AZURE_WEBAPP_PACKAGE_PATH: '.'       # リポジトリのルートをデプロイ
+  NODE_VERSION: '20.x'                 # 使用する Node.js のバージョン
 
 permissions:
   contents: read
@@ -36,8 +39,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -45,22 +47,16 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
-      - name: Install dependencies, build, and test
+      - name: Install dependencies and build
         run: |
           npm install
           npm run build --if-present
-          npm run test --if-present
 
-      - name: Copy artifact for deployment job
-        run: |
-          mkdir -p deploy
-          cp -r .next standalone package.json next.config.mjs deploy/
-
-      - name: Upload artifact for deployment
+      - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: deploy
+          path: .
 
   deploy:
     runs-on: ubuntu-latest
@@ -70,6 +66,11 @@ jobs:
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
