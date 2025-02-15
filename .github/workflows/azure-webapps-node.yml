@@ -23,9 +23,9 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_WEBAPP_NAME: your-app-name    # set this to your application's name
-  AZURE_WEBAPP_PACKAGE_PATH: '.'      # set this to the path to your web app project, defaults to the repository root
-  NODE_VERSION: '20.x'                # set this to the node version to use
+  AZURE_WEBAPP_NAME: your-app-name    # Set this to your application's name
+  AZURE_WEBAPP_PACKAGE_PATH: './deploy'  # Path to deployment package
+  NODE_VERSION: '20.x'  # Node.js version
 
 permissions:
   contents: read
@@ -48,11 +48,36 @@ jobs:
         npm run build --if-present
         npm run test --if-present
 
+    - name: Copy artifact for deployment job
+      run: |
+        mkdir -p deploy
+        if [ -d ".next/standalone" ]; then
+          cp -r .next/standalone/. ./deploy
+        else
+          echo ".next/standalone directory not found"
+        fi
+
+        if [ -d "public" ]; then
+          cp -r public ./deploy
+        else
+          echo "public directory not found, skipping"
+        fi
+
+        if [ -d ".next/static" ]; then
+          mkdir -p ./deploy/.next/static
+          cp -r .next/static/. ./deploy/.next/static
+        else
+          echo ".next/static directory not found"
+        fi
+
+        cp package.json ./deploy || echo "package.json not found"
+        cp next.config.mjs ./deploy || echo "next.config.mjs not found"
+
     - name: Upload artifact for deployment job
       uses: actions/upload-artifact@v4
       with:
         name: node-app
-        path: .
+        path: deploy
 
   deploy:
     permissions:
