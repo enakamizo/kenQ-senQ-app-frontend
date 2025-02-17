@@ -59,7 +59,7 @@ jobs:
         # 各ディレクトリやファイルが存在しない場合は、エラーメッセージを表示します。
         
     　 - name: Zip artifact for deployment
-         run: zip release.zip ./deploy -r
+         run: zip -r release.zip ./deploy
         
         # このステップでは、'deploy' ディレクトリの内容を 'release.zip' というZIPファイルに圧縮します。
         # `-r` オプションは、ディレクトリを再帰的に圧縮することを指示します。
