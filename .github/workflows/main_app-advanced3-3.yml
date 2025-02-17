@@ -1,19 +1,35 @@
-- name: 'Deploy to Azure Web App'
-  id: deploy-to-webapp
-  uses: azure/webapps-deploy@v3
-  with:
-    app-name: 'app-advanced3-3'
-    slot-name: 'Production'
-    package: .
-    publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_8DF134D7853C47EEB29D11 }}
-    startup-command: 'npm install && npm run build && npm start'
+name: Deploy to Azure Web App
 
-      
-      - name: 'Deploy to Azure Web App'
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18' # 使用する Node.js のバージョン
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build application
+        run: npm run build
+
+      - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'app-advanced3-3'
           slot-name: 'Production'
           package: .
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_8DF134D7853C47EEB29D117BBAA65C0B }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_8DF134D7853C47EEB29D11 }}
+          startup-command: 'npm start'
